@@ -12,6 +12,7 @@ import telegram
 import traceback
 import feedparser
 import configparser
+from tqdm import tqdm
 from datetime import datetime
 from sqlalchemy.orm import mapper
 from sqlalchemy import create_engine
@@ -42,13 +43,13 @@ class Source(object):
 
     def refresh(self):
         self.news = []
-        for i in self.links:
+        for i in tqdm(self.links, desc="Getting news"):
             data = feedparser.parse(i)
             self.news += [News(binascii.b2a_base64(i['title'].encode()).decode(),
                                binascii.b2a_base64(
                                    i['link'].encode()).decode(),
                                int(time.mktime(i['published_parsed']))) for i in data['entries']]
-            time.sleep(2)
+            time.sleep(1)
 
     def __repr__(self):
         return "<RSS ('%s','%s')>" % (self.link, len(self.news))
@@ -157,7 +158,7 @@ class ExportBot(object):
         logging.basicConfig(
             format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s] %(message)s',
             level=logging.INFO,
-            filename=u'%s' % log_file)
+            handlers=[logging.FileHandler(u'%s' % log_file, 'w', 'utf-8')])
         self.db = Database(config['Database']['Path'])
         self.src = Source(sources['RSS'])
         self.chat_id = config['Telegram']['chat']
@@ -176,7 +177,7 @@ class ExportBot(object):
             if not self.db.find_link(i.link):
                 now = int(time.mktime(time.localtime()))
                 i.publish = now + self.pub_pause
-                logging.info(u'Detect news: %s' % str(i).encode('utf-8'))
+                logging.info(u'Detect news: %s' % str(i))
                 self.db.add_news(i)
 
     def public_posts(self):
@@ -190,14 +191,14 @@ class ExportBot(object):
         for_publishing = list(set(line) & set(posts_from_db))
         for_publishing = sorted(for_publishing, key=lambda news: news.date)
         # Постинг каждого сообщений
-        for post in for_publishing:
+        for post in tqdm(for_publishing, desc="Posting news"):
             text = '%s %s' % (base64.b64decode(post.text).decode('utf8'),
-                              self.bit_ly.short_link(base64.b64decode(post.link).decode('utf-8')))
+                              self.bit_ly.short_link(base64.b64decode(post.link)))
             a = self.bot.sendMessage(
                 chat_id=self.chat_id, text=text)  # , parse_mode=telegram.ParseMode.HTML)
             message_id = a.message_id
             chat_id = a['chat']['id']
             self.db.update(post.link, chat_id, message_id)
             logging.info(u'Public: %s;%s;' %
-                         (str(post).encode('utf-8'), message_id))
+                         (str(post), message_id))
             time.sleep(self.delay_between_messages)
