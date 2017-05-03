@@ -5,6 +5,7 @@ import json
 import time
 import base64
 import urllib
+import socket
 import logging
 import binascii
 import telegram
@@ -21,6 +22,7 @@ from sqlalchemy import Table, Column, Integer, String, ForeignKey, update, and_
 
 Base = declarative_base()
 
+socket.setdefaulttimeout(5)
 
 def conv_to_rss(link):
     if "vk.com" in link:
@@ -36,7 +38,7 @@ class Source(object):
     def __init__(self, config_links):
         self.links = [conv_to_rss(config_links[i]) for i in config_links]
         self.news = []
-        self.refresh()
+        # self.refresh()
 
     def refresh(self):
         self.news = []
@@ -46,6 +48,7 @@ class Source(object):
                                binascii.b2a_base64(
                                    i['link'].encode()).decode(),
                                int(time.mktime(i['published_parsed']))) for i in data['entries']]
+            time.sleep(2)
 
     def __repr__(self):
         return "<RSS ('%s','%s')>" % (self.link, len(self.news))
@@ -180,7 +183,7 @@ class ExportBot(object):
         now = datetime.now()
         # Получаем 30 последних записей из rss канала и новости из БД, у которых message_id=0
         posts_from_db = self.db.get_post_without_message_id()
-        self.src.refresh()
+        # self.src.refresh()
         line = [i for i in self.src.news if (
             now - datetime.fromtimestamp(i.date)).days < 1]
         # Выбор пересечний этих списков
