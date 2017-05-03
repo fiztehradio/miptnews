@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
 #-*- coding: UTF 8 -*-
+#!/usr/bin/env python3
 import sys
 import json
 import time
