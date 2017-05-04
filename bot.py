@@ -193,7 +193,7 @@ class ExportBot(object):
         # Постинг каждого сообщений
         for post in tqdm(for_publishing, desc="Posting news"):
             text = '%s %s' % (base64.b64decode(post.text).decode('utf8'),
-                              self.bit_ly.short_link(base64.b64decode(post.link)).decode('utf8'))
+                              self.bit_ly.short_link(base64.b64decode(post.link).decode('utf8')))
             a = self.bot.sendMessage(
                 chat_id=self.chat_id, text=text)  # , parse_mode=telegram.ParseMode.HTML)
             message_id = a.message_id
