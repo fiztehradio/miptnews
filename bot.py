@@ -32,7 +32,8 @@ def conv_to_rss(link):
 
 
 class Source(object):
-    """ Класс для парсинга RSS-канала.
+    """ 
+    Класс для парсинга RSS-канала.
     Выделяет из общей информации только интереующие нас поля: Заголовок, ссылку, дату публикации.
     """
 
@@ -117,7 +118,6 @@ class Database(object):
     """
     Класс для обработки сессии SQLAlchemy.
     Так же включает в себя минимальный набор методов, вызываемых в управляющем классе.
-    Названия методов говорящие.
     """
 
     def __init__(self, obj):
@@ -193,7 +193,7 @@ class ExportBot(object):
         # Постинг каждого сообщений
         for post in tqdm(for_publishing, desc="Posting news"):
             text = '%s %s' % (base64.b64decode(post.text).decode('utf8'),
-                              self.bit_ly.short_link(base64.b64decode(post.link)).decode('utf8'))
+                              self.bit_ly.short_link(base64.b64decode(post.link).decode('utf8')))
             a = self.bot.sendMessage(
                 chat_id=self.chat_id, text=text)  # , parse_mode=telegram.ParseMode.HTML)
             message_id = a.message_id
