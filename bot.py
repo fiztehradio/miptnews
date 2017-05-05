@@ -25,6 +25,7 @@ Base = declarative_base()
 
 socket.setdefaulttimeout(5)
 
+
 def conv_to_rss(link):
     if "vk.com" in link:
         return link.replace("vk.com", "vkrss.com")
@@ -32,7 +33,7 @@ def conv_to_rss(link):
 
 
 class Source(object):
-    """ 
+    """
     Класс для парсинга RSS-канала.
     Выделяет из общей информации только интереующие нас поля: Заголовок, ссылку, дату публикации.
     """
@@ -151,6 +152,8 @@ class ExportBot(object):
         config.read('./config')
         sources = configparser.ConfigParser()
         sources.read('./sources')
+        tokens = configparser.ConfigParser()
+        tokens.read('./tokens')
         log_file = config['Export_params']['log_file']
         self.pub_pause = int(config['Export_params']['pub_pause'])
         self.delay_between_messages = int(
@@ -162,9 +165,9 @@ class ExportBot(object):
         self.db = Database(config['Database']['Path'])
         self.src = Source(sources['RSS'])
         self.chat_id = config['Telegram']['chat']
-        bot_access_token = config['Telegram']['access_token']
-        self.bot = telegram.Bot(token=bot_access_token)
-        self.bit_ly = Bitly(config['Bitly']['access_token'])
+        self.bot_access_token = tokens['Telegram']['access_token']
+        self.bot = telegram.Bot(token=self.bot_access_token)
+        self.bit_ly = Bitly(tokens['Bitly']['access_token'])
 
     def detect(self):
         # получаем 30 последних постов из rss-канала

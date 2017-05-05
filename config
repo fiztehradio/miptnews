@@ -2,13 +2,9 @@
 Path = sqlite:///./miptnews.db
 
 [Telegram]
-access_token =
-chat =
+chat = -1001108420018
 
 [Export_params]
-delay_between_messages = 60
+delay_between_messages = 120
 pub_pause = 0
 log_file = logging.log
-
-[Bitly]
-access_token = 
