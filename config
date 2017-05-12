@@ -5,6 +5,6 @@ Path = sqlite:///./miptnews.db
 chat = -1001108420018
 
 [Export_params]
-delay_between_messages = 120
+delay_between_messages = 240
 pub_pause = 0
 log_file = logging.log
