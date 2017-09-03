@@ -28,7 +28,9 @@ socket.setdefaulttimeout(5)
 
 def conv_to_rss(link):
     if "vk.com" in link:
-        return link.replace("vk.com", "vkrss.com")
+        # return link.replace("vk.com", "vkrss.com")
+        group = link[link.find("vk.com") + 7:]
+        return "http://feed.exileed.com/vk/feed/%s" % group
     return link
 
 
