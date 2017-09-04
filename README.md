@@ -3,6 +3,10 @@ Telegram channel with MIPT news aggregation. [Join us!](telegram.me/miptnews)
 
 Предложения писать [автору](telegram.me/okhlopkov).
 
+# Список источников
+
+https://github.com/fiztehradio/miptnews/blob/master/sources
+
 # Установка на macOS
  
 Откройте terminal и введите команды 
@@ -35,6 +39,10 @@ python3 create_table.py
 ``` bash
 python3 load_and_post.py
 ```
+
+# Периодичный запуск
+
+Для macOS есть прога: LaunchControl. Позволяет настроить демона, который будет запускать bash-скрипт с выбранной периодичностью. 
 
 ___
 _Вдохновлен https://habrahabr.ru/post/302688/_.
