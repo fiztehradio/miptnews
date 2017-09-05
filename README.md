@@ -1,7 +1,7 @@
 # miptnews
 Telegram channel with MIPT news aggregation. [Join us!](https://t.me/miptnews)
 
-Предложения писать [автору](telegram.me/okhlopkov).
+Предложения писать [автору](https://t.me/okhlopkov).
 
 # Список источников
 
