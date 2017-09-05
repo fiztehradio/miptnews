@@ -1,5 +1,5 @@
 # miptnews
-Telegram channel with MIPT news aggregation. [Join us!](telegram.me/miptnews)
+Telegram channel with MIPT news aggregation. [Join us!](https://t.me/miptnews)
 
 Предложения писать [автору](telegram.me/okhlopkov).
 
