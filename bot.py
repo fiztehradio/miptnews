@@ -2,6 +2,7 @@
 #!/usr/bin/env python3
 import sys
 import json
+import ssl
 import time
 import base64
 import urllib
@@ -48,7 +49,10 @@ class Source(object):
     def refresh(self):
         self.news = []
         for link in tqdm(self.links, desc="Getting news"):
-            data = feedparser.parse(link)
+            data = 0
+            if hasattr(ssl, '_create_unverified_context'):
+                ssl._create_default_https_context = ssl._create_unverified_context
+                data = feedparser.parse(link)
             self.news += [News(binascii.b2a_base64( entry['author_detail']['name'].encode() )
                                               .decode(),
                                binascii.b2a_base64( entry['link'].encode() ).decode(),
