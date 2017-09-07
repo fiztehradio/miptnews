@@ -20,18 +20,19 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, update, and_
+from string import punctuation
 
 
 Base = declarative_base()
 
-socket.setdefaulttimeout(5)
+# socket.setdefaulttimeout(10)
 
 
 def conv_to_rss(link):
     if "vk.com" in link:
         # return link.replace("vk.com", "vkrss.com")
         group = link[link.find("vk.com") + 7:]
-        return "http://feed.exileed.com/vk/feed/%s" % group
+        return "http://feed.exileed.com/vk/feed/%s" % (group + "?count=5")
     return link
 
 
@@ -202,7 +203,9 @@ class ExportBot(object):
         # for_publishing = sorted(line, key=lambda news: news.date)
         # Постинг каждого сообщения
         for post in tqdm(for_publishing, desc="Posting news"):
-            header = '#' + base64.b64decode(post.text).decode('utf8').lower().replace(' ', '_')
+            header = base64.b64decode(post.text).decode('utf8')
+            header = ''.join(c for c in header if c not in set(punctuation + '—«»'))
+            header = '#' + '_'.join(header.lower().split())
             text = '%s %s' % (header,
                               self.bit_ly.short_link(base64.b64decode(post.link).decode('utf8')))
             a = self.bot.sendMessage(
