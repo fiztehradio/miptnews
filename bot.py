@@ -47,12 +47,12 @@ class Source(object):
 
     def refresh(self):
         self.news = []
-        for i in tqdm(self.links, desc="Getting news"):
-            data = feedparser.parse(i)
-            self.news += [News(binascii.b2a_base64(i['title'].encode()).decode(),
-                               binascii.b2a_base64(
-                                   i['link'].encode()).decode(),
-                               int(time.mktime(i['published_parsed']))) for i in data['entries']]
+        for link in tqdm(self.links, desc="Getting news"):
+            data = feedparser.parse(link)
+            self.news += [News(binascii.b2a_base64( entry['author_detail']['name'].encode() )
+                                              .decode(),
+                               binascii.b2a_base64( entry['link'].encode() ).decode(),
+                               int( time.mktime(entry['published_parsed']) )) for entry in data['entries']]
             time.sleep(1)
 
     def __repr__(self):
@@ -195,9 +195,11 @@ class ExportBot(object):
         # Выбор пересечний этих списков
         for_publishing = list(set(line) & set(posts_from_db))
         for_publishing = sorted(for_publishing, key=lambda news: news.date)
-        # Постинг каждого сообщений
+        # for_publishing = sorted(line, key=lambda news: news.date)
+        # Постинг каждого сообщения
         for post in tqdm(for_publishing, desc="Posting news"):
-            text = '%s %s' % (base64.b64decode(post.text).decode('utf8'),
+            header = '#' + base64.b64decode(post.text).decode('utf8').lower().replace(' ', '_')
+            text = '%s %s' % (header,
                               self.bit_ly.short_link(base64.b64decode(post.link).decode('utf8')))
             a = self.bot.sendMessage(
                 chat_id=self.chat_id, text=text)  # , parse_mode=telegram.ParseMode.HTML)
