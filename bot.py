@@ -2,6 +2,7 @@
 #!/usr/bin/env python3
 import sys
 import json
+import ssl
 import time
 import base64
 import urllib
@@ -19,18 +20,19 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, update, and_
+from string import punctuation
 
 
 Base = declarative_base()
 
-socket.setdefaulttimeout(5)
+# socket.setdefaulttimeout(10)
 
 
 def conv_to_rss(link):
     if "vk.com" in link:
         # return link.replace("vk.com", "vkrss.com")
         group = link[link.find("vk.com") + 7:]
-        return "http://feed.exileed.com/vk/feed/%s" % group
+        return "http://feed.exileed.com/vk/feed/%s" % (group + "?count=5")
     return link
 
 
@@ -47,12 +49,15 @@ class Source(object):
 
     def refresh(self):
         self.news = []
-        for i in tqdm(self.links, desc="Getting news"):
-            data = feedparser.parse(i)
-            self.news += [News(binascii.b2a_base64(i['title'].encode()).decode(),
-                               binascii.b2a_base64(
-                                   i['link'].encode()).decode(),
-                               int(time.mktime(i['published_parsed']))) for i in data['entries']]
+        for link in tqdm(self.links, desc="Getting news"):
+            data = 0
+            if hasattr(ssl, '_create_unverified_context'):
+                ssl._create_default_https_context = ssl._create_unverified_context
+                data = feedparser.parse(link)
+            self.news += [News(binascii.b2a_base64( entry['author_detail']['name'].encode() )
+                                              .decode(),
+                               binascii.b2a_base64( entry['link'].encode() ).decode(),
+                               int( time.mktime(entry['published_parsed']) )) for entry in data['entries']]
             time.sleep(1)
 
     def __repr__(self):
@@ -195,9 +200,13 @@ class ExportBot(object):
         # Выбор пересечний этих списков
         for_publishing = list(set(line) & set(posts_from_db))
         for_publishing = sorted(for_publishing, key=lambda news: news.date)
-        # Постинг каждого сообщений
+        # for_publishing = sorted(line, key=lambda news: news.date)
+        # Постинг каждого сообщения
         for post in tqdm(for_publishing, desc="Posting news"):
-            text = '%s %s' % (base64.b64decode(post.text).decode('utf8'),
+            header = base64.b64decode(post.text).decode('utf8')
+            header = ''.join(c for c in header if c not in set(punctuation + '—«»'))
+            header = '#' + '_'.join(header.lower().split())
+            text = '%s %s' % (header,
                               self.bit_ly.short_link(base64.b64decode(post.link).decode('utf8')))
             a = self.bot.sendMessage(
                 chat_id=self.chat_id, text=text)  # , parse_mode=telegram.ParseMode.HTML)
