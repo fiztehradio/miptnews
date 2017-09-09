@@ -32,8 +32,7 @@ class Source(object):
             if hasattr(ssl, '_create_unverified_context'):
                 ssl._create_default_https_context = ssl._create_unverified_context
                 data = feedparser.parse(link)
-            self.news += [News(binascii.b2a_base64(entry['author_detail']['name'].encode())
-                               .decode(),
+            self.news += [News(binascii.b2a_base64(data['feed']['title'].replace(' VK feed', '').encode()).decode(),
                                binascii.b2a_base64(entry['link'].encode()).decode(),
                                int(time.mktime(entry['published_parsed']))) for entry in data['entries']]
             time.sleep(1)
