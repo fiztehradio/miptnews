@@ -12,6 +12,5 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 bot = ExportBot()
 updater = Updater(bot=bot)
 j = updater.job_queue
-# job = Job(bot_job, 300)
-j.run_repeating(bot_job, interval=1)
+j.run_repeating(bot_job, interval=1800, first=0)
 updater.start_polling()
