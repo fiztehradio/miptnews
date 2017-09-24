@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from objs.news import News
 
 
-class Database(object):
+class DatabaseHandler(object):
     """
     Класс для обработки сессии SQLAlchemy.
     Так же включает в себя минимальный набор методов, вызываемых в управляющем классе.

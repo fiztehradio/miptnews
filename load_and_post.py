@@ -1,7 +1,17 @@
 #!/usr/bin/env python3
 #-*- coding: UTF 8 -*-
 
-from objs.bot import ExportBot
+from objs.bot import ExportBot, bot_job
+from telegram.ext import Updater, Job
+import logging
+# bot = ExportBot()
+# bot.detect()
+# bot.public_posts()
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+					level=logging.INFO)
 bot = ExportBot()
-bot.detect()
-bot.public_posts()
+updater = Updater(bot=bot)
+j = updater.job_queue
+# job = Job(bot_job, 300)
+j.run_repeating(bot_job, interval=1)
+updater.start_polling()

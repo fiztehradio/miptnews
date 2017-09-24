@@ -14,7 +14,7 @@ def conv_to_rss(link):
     return link
 
 
-class Source(object):
+class RssParser(object):
     """
     Класс для парсинга RSS-канала.
     Выделяет из общей информации только интереующие нас поля: Заголовок, ссылку, дату публикации.
