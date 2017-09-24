@@ -1,7 +1,6 @@
 # -*- coding: UTF 8 -*-
 # !/usr/bin/env python3
 import configparser
-# import socket
 import logging
 from string import punctuation
 from telegram import Bot
@@ -13,12 +12,12 @@ from objs.rssparser import *
 from objs.bitly import Bitly
 
 
-# socket.setdefaulttimeout(10)
-
-
 def bot_job(bot, job):
     bot.detect()
     bot.public_posts()
+
+def echo(bot, update):
+    bot.send_message(chat_id=update.message.chat_id, text="Still workin'")
 
 
 class ExportBot(Bot):
@@ -77,7 +76,7 @@ class ExportBot(Bot):
             header = '#' + '_'.join(header.lower().split())
             text = '%s %s' % (header,
                               self.bit_ly.short_link(base64.b64decode(post.link).decode('utf8')))
-            a = self.sendMessage(
+            a = self.send_message(
                 chat_id=self.chat_id, text=text)  # , parse_mode=telegram.ParseMode.HTML)
             message_id = a.message_id
             chat_id = a['chat']['id']

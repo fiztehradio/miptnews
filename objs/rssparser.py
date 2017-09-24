@@ -23,7 +23,6 @@ class RssParser(object):
     def __init__(self, config_links):
         self.links = [conv_to_rss(config_links[i]) for i in config_links]
         self.news = []
-        # self.refresh()
 
     def refresh(self):
         self.news = []
