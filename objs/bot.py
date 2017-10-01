@@ -1,22 +1,26 @@
 # -*- coding: UTF 8 -*-
 # !/usr/bin/env python3
 import configparser
-# import socket
 import logging
 from string import punctuation
-import telegram
+from telegram import Bot
 import base64
 from datetime import datetime
 
-from objs.database_handler import Database
-from objs.rss_parser import *
+from objs.databasehandler import DatabaseHandler
+from objs.rssparser import *
 from objs.bitly import Bitly
 
 
-# socket.setdefaulttimeout(10)
+def bot_job(bot, job):
+    bot.detect()
+    bot.public_posts()
+
+def echo(bot, update):
+    bot.send_message(chat_id=update.message.chat_id, text="Still workin'")
 
 
-class ExportBot(object):
+class ExportBot(Bot):
     def __init__(self):
         config = configparser.ConfigParser()
         config.read('./config')
@@ -25,6 +29,7 @@ class ExportBot(object):
         tokens = configparser.ConfigParser()
         tokens.read('./tokens')
         log_file = config['Export_params']['log_file']
+        Bot.__init__(self, token=tokens['Telegram']['access_token'])
         self.pub_pause = int(config['Export_params']['pub_pause'])
         self.delay_between_messages = int(
             config['Export_params']['delay_between_messages'])
@@ -32,11 +37,11 @@ class ExportBot(object):
             format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s] %(message)s',
             level=logging.INFO,
             handlers=[logging.FileHandler(u'%s' % log_file, 'w', 'utf-8')])
-        self.db = Database(config['Database']['Path'])
-        self.src = Source(sources['RSS'])
+        self.db = DatabaseHandler(config['Database']['Path'])
+        self.src = RssParser(sources['RSS'])
         self.chat_id = config['Telegram']['chat']
-        self.bot_access_token = tokens['Telegram']['access_token']
-        self.bot = telegram.Bot(token=self.bot_access_token)
+        # self.bot_access_token = tokens['Telegram']['access_token']
+        # self.bot = Bot(token=self.bot_access_token)
         self.bit_ly = Bitly(tokens['Bitly']['access_token'])
 
     def detect(self):
@@ -51,18 +56,19 @@ class ExportBot(object):
                 now = int(time.mktime(time.localtime()))
                 i.publish = now + self.pub_pause
                 logging.info(u'Detect news: %s' % str(i))
-                self.db.add_news(i)
+                if self.db.add_news(i):
+                    print('success')
 
     def public_posts(self):
         now = datetime.now()
         # Получаем 30 последних записей из rss канала и новости из БД, у которых message_id=0
         posts_from_db = self.db.get_post_without_message_id()
-        line = [i for i in self.src.news if (
+        today_news = [i for i in self.src.news if (
             now - datetime.fromtimestamp(i.date)).days < 1]
         # Выбор пересечний этих списков
-        for_publishing = list(set(line) & set(posts_from_db))
+        for_publishing = list(set(today_news) & set(posts_from_db))
         for_publishing = sorted(for_publishing, key=lambda news: news.date)
-        # for_publishing = sorted(line, key=lambda news: news.date)
+        # for_publishing = sorted(today_news, key=lambda news: news.date)
         # Постинг каждого сообщения
         for post in tqdm(for_publishing, desc="Posting news"):
             header = base64.b64decode(post.text).decode('utf8')
@@ -70,7 +76,7 @@ class ExportBot(object):
             header = '#' + '_'.join(header.lower().split())
             text = '%s %s' % (header,
                               self.bit_ly.short_link(base64.b64decode(post.link).decode('utf8')))
-            a = self.bot.sendMessage(
+            a = self.send_message(
                 chat_id=self.chat_id, text=text)  # , parse_mode=telegram.ParseMode.HTML)
             message_id = a.message_id
             chat_id = a['chat']['id']

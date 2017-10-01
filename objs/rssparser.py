@@ -14,7 +14,7 @@ def conv_to_rss(link):
     return link
 
 
-class Source(object):
+class RssParser(object):
     """
     Класс для парсинга RSS-канала.
     Выделяет из общей информации только интереующие нас поля: Заголовок, ссылку, дату публикации.
@@ -23,7 +23,6 @@ class Source(object):
     def __init__(self, config_links):
         self.links = [conv_to_rss(config_links[i]) for i in config_links]
         self.news = []
-        # self.refresh()
 
     def refresh(self):
         self.news = []
