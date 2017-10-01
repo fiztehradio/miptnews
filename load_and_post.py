@@ -5,9 +5,6 @@ from objs.bot import ExportBot, bot_job, echo
 from telegram.ext import Updater, MessageHandler, Filters
 import logging
 
-# bot = ExportBot()
-# bot.detect()
-# bot.public_posts()
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 					level=logging.INFO)
 bot = ExportBot()
